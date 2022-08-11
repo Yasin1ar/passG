@@ -20,5 +20,3 @@ class PassGenerator:
 			if char not in password : password += char
 
 		return password
-
-print(PassGenerator.create_pass())
