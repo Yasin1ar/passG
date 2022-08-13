@@ -1,3 +1,5 @@
+""" A program that generates Solid 8-digits passwords, and keep them safe in .txt file in the chosen folder """
+
 from random import choices, choice
 
 class PassGenerator:
@@ -23,47 +25,44 @@ class PassGenerator:
 
 class PassManager:
 
-	path = '/home/Yasin10ar/Documents/MyDucs/PassG/passwords.txt'
+	file = "C:\\Users\\yasin\\Documents\\MyDucs\\Important\\passwords\\Passwords.txt"
 
 	def add():
-		with open(PassManager.path, 'a') as f:
+		with open(PassManager.file, 'a') as f:
 			f.write(f"{profile} : {PassGenerator.create_pass()}\n")
 
 
 	def delete():
-		with open(PassManager.path, "w") as f:
+		with open(PassManager.file, "w") as f:
 			lines = f.readlines()
 			for line in lines:
 				if profile not in line:
 					f.write(line)
 
 	def replace():
-		with open(PassManager.path, "w") as f:
+		with open(PassManager.file, "w") as f:
 			lines = f.readlines()
 			for line in lines:
 				if profile in line:
 					print(line)
 
+class Main:
+
 	def main():
-		with open(PassManager.path, 'r') as f:
+		with open(PassManager.file, 'r') as f:
 			lines = f.readlines()
-			print(lines)
-			if profile in lines:
-				option = input(f"{profile} already exist, what do you want to do? (delete/replace) : ")
-
-				if option == 'delete':
-					PassManager.delete()
-				elif option == 'replace':
-					pass
-				else:
-					print("wrong input, options are 'delete' and 'replace'/n exiting")
-
-			else:
-				PassManager.add()
+			profile = 'read'
+			while profile == "read" or len(profile) < 4:
+    			profile = input(">> ")
+    			if profile == "read":
+        			list=[]        
+        			for i in lines:
+            			l = i.split(':')
+            			line=f"{l[0].strip()} : {l[1][0:-1]}"
+            			list.append(line)
+	
 
 
 if __name__ == "__main__":
-	
-	profile =input('PassG > ')
-	PassManager.main()
+	Main.main()
 	exit()
