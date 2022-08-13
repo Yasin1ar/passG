@@ -1,5 +1,4 @@
 """ A program that generates Solid 8-digits passwords, and keep them safe in .txt file in the chosen folder """
-
 from random import choices, choice
 
 class PassGenerator:
@@ -13,16 +12,20 @@ class PassGenerator:
 		for i in choices(PassGenerator.chars[0],k=3) : password += i 
 		for i in choices(PassGenerator.chars[2],k=2) : password += i 
 
-		password_list = list(password)
-		password = ''
+		password = set(password)
+		temporary_variable = ''
+		for i in password: temporary_variable += i
+		password = temporary_variable 
 
-		while len(password) != 8:
-			
-			char = choice(password_list)
-			if char not in password : password += char
+		if ( 8 - len(set(password)) ) != 0 :
+			list = PassGenerator.chars[0] + PassGenerator.chars[1]
+			while len(set(password)) != 8:
+				l = choice(list)
+				if l not in password.lower() : 
+					password += l
 
 		return password
-
+		
 class PassManager:
 
 	file = "C:\\Users\\yasin\\Documents\\MyDucs\\Important\\passwords\\Passwords.txt"
