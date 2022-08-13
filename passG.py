@@ -30,6 +30,7 @@ class PassManager:
 	def add():
 		with open(PassManager.file, 'a') as f:
 			f.write(f"{profile} : {PassGenerator.create_pass()}\n")
+			exit()
 
 
 	def delete():
@@ -46,21 +47,60 @@ class PassManager:
 				if profile in line:
 					print(line)
 
+	def reorder():
+		with open(PassManager.file, 'r+') as f:
+			lines = f.readlines()
+
+
 class Main:
 
 	def main():
+
 		with open(PassManager.file, 'r') as f:
 			lines = f.readlines()
-			profile = 'read'
-			while profile == "read" or len(profile) < 4:
-    			profile = input(">> ")
-    			if profile == "read":
-        			list=[]        
-        			for i in lines:
-            			l = i.split(':')
-            			line=f"{l[0].strip()} : {l[1][0:-1]}"
-            			list.append(line)
-	
+
+			global profile
+			profile = 'show'
+			commands = ['show', 'delete all', 'help', 'Help', 'HELP',' passG', 'PassG']
+			while profile in commands or len(profile) < 4:
+
+				profile = input(">> ")
+
+				if profile == "show":
+					list=[]        
+					for i in lines:
+						l = i.split(':')
+						line=f"{l[0].strip()} : {l[1][0:-1]}"
+						list.append(line)
+
+					print(list)
+					
+				elif profile == 'delete all':
+					with open(PassManager.file, 'w') as f:
+						f.write('')
+						exit()
+
+				elif profile in commands[2:-1]:
+					print(" Commands are 'show' and 'delete all' ")
+
+
+			if len(lines) == 0:PassManager.add()
+			for i in lines:
+				l = i.split(":")
+
+				if profile in l[0]:
+					option = input(f"{profile} already exist, what do you want to do? (delete/replace) : ")
+
+					if option == 'delete':
+						PassManager.delete()
+					elif option == 'replace':
+						PassManager.replace()
+					else:
+						print("wrong input, options are 'delete' and 'replace'/n exiting ...")
+
+				else:
+					PassManager.add()
+
 
 
 if __name__ == "__main__":
