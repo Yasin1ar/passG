@@ -60,17 +60,26 @@ class PassManager:
 		print("successfully replaced the previous password with new one({})".format(new_password))
 
 	def reorder():
-		with open(PassManager.file, 'r+') as f:
+		with open(PassManager.file, 'r') as f:
 			lines = f.readlines()
+			longest_len = 4
+			for line in lines:
+				profile_len = len(line.split(':')[0].strip())
+				if profile_len > longest_len : longest_len = profile_len
+			with open(PassManager.file , 'w') as f:
+				space = ' '
+				for line in lines : 
+					l = line.split(':')
+					f.write(f"{l[0].strip()}{space * (longest_len - len(l[0].strip()))} :  {l[1].strip()}\n")
 
 class Main:
-
+	
 	def main():
 
 		global profile
 		profile = ''
 
-		commands = ['show', 'delete all', 'help', 'Help', 'HELP', 'passG', 'PassG', 'passg']
+		commands = ['show', 'delete all', 'exit', 'help', 'Help', 'HELP', 'passG', 'PassG', 'passg']
 		while profile in commands or len(profile) < 4:
 
 			with open(PassManager.file, 'r') as f:
@@ -92,11 +101,14 @@ class Main:
 					print(list)
 					
 				elif profile == 'delete all':
-					with open(PassManager.file, 'w') as f:
-						f.write('')
-						exit()
+					response = input('Are you sure you want to delete all your passwords? (y/n) : ')
+					if response in ['Yes', 'yes', 'Y', 'y']:
+						with open(PassManager.file, 'w') as f:
+							f.write('')
+							print('The file is clear now and all the passwords are gone')
+							exit()
 
-				elif profile in commands[2:]:
+				elif profile in commands[3:]:
 					print(" Commands are 'show' and 'delete all' ")
 					print("hint : strongly recommend to use a good and memorable or informational profile \
 					that will help you to know which password is for which , \
@@ -106,6 +118,9 @@ class Main:
 					print('If you want to generate a password, you must enter a word with more than 3 character')
 					print("type 'help' for more\n")
 
+				elif profile == 'exit': 
+					PassManager.reorder()
+					exit()
 
 		with open(PassManager.file, 'r+') as f:
 			lines = f.readlines()
@@ -132,7 +147,9 @@ class Main:
 				else:
 					PassManager.add()
 					break
+		input()
 
 if __name__ == "__main__":
 	Main.main()
+	PassManager.reorder()
 	exit()
