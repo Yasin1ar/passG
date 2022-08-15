@@ -1,5 +1,4 @@
-""" A program that generates Solid 8-digits passwords, and keep them safe in .txt file in the chosen folder,
- and sends update via telegram """
+""" A program that generates Solid 8-digits passwords, and keep them safe in .txt file in Documents folder (you can manually change it in the code)"""
 from random import choices, choice
 
 class PassGenerator:
