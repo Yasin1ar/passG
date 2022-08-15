@@ -1,5 +1,7 @@
 """ A program that generates Solid 8-digits passwords, and keep them safe in .txt file in Documents folder (you can manually change it in the code)"""
 from random import choices, choice
+import getpass
+user=str(getpass.getuser())
 
 class PassGenerator:
 
@@ -28,7 +30,7 @@ class PassGenerator:
 
 class PassManager:
 
-	file = "C:\\Users\\yasin\\Documents\\MyDucs\\Important\\passwords\\Passwords.txt"
+	file = f"C:\\Users\\{user}\\Documents\\PassG\\Passwords.txt"
 
 	def add():
 		with open(PassManager.file, 'a') as f:
