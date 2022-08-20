@@ -148,28 +148,30 @@ class Main:
 
 		with open(PassManager.file, "r") as f:
 			lines = f.readlines()
-			if len(lines) == 0 : PassManager.add() ; exit()
+			profiles = [line.split(':')[0].strip() for line in lines]
 
-			for i in lines:
-				l = i.split(":")
-
-				if profile == l[0].strip():
+			if len(lines) == 0 : PassManager.add()
+			
+			add_flag = True
+			for p in profiles:
+				if profile.strip() == p:
 					option = input(f" {profile} already exist, what do you want to do? (delete/replace) : ")
 					
 					if option == "delete":
 						global line_to_remove
 						line_to_remove = i
 						PassManager.delete()
+						add_flag = False
 						break
 					elif option == "replace":
 						PassManager.replace()
+						add_flag = False
 						break
 					else:
 						print( "wrong input, options are 'delete' and 'replace'\n exiting ...")
 
-				else:
-					PassManager.add()
-					break
+		
+			if add_flag : PassManager.add()
 
 if __name__ == "__main__":
 	key = " on "
