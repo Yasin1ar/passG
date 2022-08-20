@@ -6,9 +6,4 @@ but simpler & faster :)
 * It's has a friendly command-line interface 
 * You can access and modify your saved passwords
 * it's secure
-* *Notification via telegram*
-I *coming soon ...*
-
-
-Note: please attention that you have to create your own bot, and add the token in code if you want to use the telegram notification option.
-You can create a bot using @botfather in telegram, get the token, and then add it in passG.py code, line 130.
+* I coded based on OOP principles and paradigm, so it's easy to read and manipulate, you can add your own features on it :) 
