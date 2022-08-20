@@ -2,11 +2,11 @@
  and sends update via telegram """
  
 from random import choices, choice
-from telegram import Bot
+import os
 import logging
 
 LOG_FORMAT = "%(levelname)s %(asctime)s %(message)s"
-logging.basicConfig(filename = "Your logs.txt file path",
+logging.basicConfig(filename = os.getcwd(),
 					format=LOG_FORMAT,
 					level=logging.DEBUG)
 
@@ -39,7 +39,7 @@ class PassGenerator:
 
 class PassManager:
 
-	file = "path of the file passwords.txt, where you want to save your passwords"
+	file = os.getcwd()
 
 	def add():
 		with open(PassManager.file, "a") as f:
@@ -52,16 +52,6 @@ class PassManager:
 			print(f" Succussfully added    profile{space_a *  ' '} : password\n")
 			print(f"                       {profile}{space_b * ' '} : {password}\n")
 			logger.info("Password added")
-			try:
-				print("Trying to send you a notification via PassG telegram bot .......")
-				PassNotify.notify_me(f"You added new password:\n{profile.strip()} : {password}")
-				print("sent succussfully, checkout!")
-				logger.info("sent add notify via telegram successfully")
-
-			except:
-				print("Network Error, Can't notify you via Telegram, please check your connection or VPN")
-				logger.error("add notifay had network error")
-
 
 	def delete():
 		with open(PassManager.file, "r") as f:
@@ -73,16 +63,6 @@ class PassManager:
 		
 		logger.info(f"{line_to_remove} was deleted")
 		print(f" {profile}'ve been successfully deleted ")
-		
-		try:
-			print("Trying to send you a notification via PassG telegram bot .......")
-			PassNotify.notify_me(f"{line_to_remove} Does no longer exist!")
-			print("sent succussfully, checkout!")
-			logger.info("sent delete notify via telegram successfully")
-
-		except:
-			print("Network Error, Can't notify you via Telegram, please check your connection or VPN")
-			logger.error("delete notifay had network error")
 
 	def replace():
 		with open(PassManager.file, "r") as f:
@@ -91,25 +71,12 @@ class PassManager:
 				for line in lines:
 					line_split = line.split(":")
 					if profile in line_split[0]:
-						line_ = line
-						profile_ = profile
 						new_password = PassGenerator.create_pass()
-						new_password_ = new_password
 						line = f"{profile} : {new_password}\n"
 					f.write(line)
 		
 		logger.info(f"{line_} replaced with new password {new_password_}")
 		print(" successfully replaced the previous password with new one({})".format(new_password))
-
-		try:
-			print("Trying to send you a notification via PassG telegram bot .......")
-			PassNotify.notify_me(f"You have replaced a Password\n\n{PassNotify.striketrough(line_)}\n{profile_} : {new_password_}")
-			print("sent succussfully, checkout!")
-			logger.info("sent replace notify via telegram successfully")
-
-		except:
-			print("Network Error, Can't notify you via Telegram, please check your connection or VPN")
-			logger.error("Replace notifay had network error")
 
 	def reorder():
 		with open(PassManager.file, "r") as f:
@@ -123,19 +90,8 @@ class PassManager:
 				for line in lines : 
 					l = line.split(":")
 					f.write(f"{l[0].strip()}{space * (longest_len - len(l[0].strip()))} :  {l[1].strip()}\n")
-
-class PassNotify:
-	
-	def notify_me(payload):
-		bot = Bot("Your Bot Token") #get it form @botfather in telegram
-		bot.send_message(text=payload, chat_id=762302838)
-		
-	def striketrough(text:str):
-		result = ""
-		for c in text:
-			result += c + "\u0336"
-		return result
-
+					
+					
 class Main:
 	
 	def main():
@@ -174,15 +130,6 @@ class Main:
 								f.write("")
 								print(" The file is clear now and all the passwords are gone")
 								logger.warn("delete all command have deleted all passwords")
-						try:
-							print("Trying to send you a notification via PassG telegram bot .......")
-							PassNotify.notify_me("You have deleted all of your password\n"+"WTF\n" * 5)
-							print("sent succussfully, checkout!")
-							logger.info("sent 'delete all' notify via telegram successfully")
-
-						except:
-							print("Network Error, Can't notify you via Telegram, please check your connection or VPN")
-							logger.error("'delete all' notify had network error")
 
 							
 				elif profile in commands[3:]:
