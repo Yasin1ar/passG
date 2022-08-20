@@ -10,5 +10,5 @@ but simpler & faster :)
 I *coming soon ...*
 
 
-Note: please attention that you have to create your own bot, and add the token in code if you want to use the telegram notificaton option.
-You can creat a bot using @botfather in telegram, get the token, and then add in passG.py code, line 130.
+Note: please attention that you have to create your own bot, and add the token in code if you want to use the telegram notification option.
+You can create a bot using @botfather in telegram, get the token, and then add it in passG.py code, line 130.
