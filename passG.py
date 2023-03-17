@@ -6,6 +6,7 @@ import logging
 # FOR WRITING LOGS WHICH IS HELPFUL IN DEBUG
 LOG_FORMAT = "%(levelname)s %(asctime)s %(message)s"
 # YOU CAN CHANGE THE LOG PATH HERE
+# WARNING : If you are not using Windows you should change '\\' with '/'
 LOG_PATH = os.getcwd() + "\\loggs.txt"
 logging.basicConfig(filename = LOG_PATH,
 					format=LOG_FORMAT,
@@ -183,6 +184,7 @@ class Main:
 
 if __name__ == "__main__":
 	# THE PATH YOU WANT passwords.txt TO BE, MODIFY IT TO YOUR NEED
+	# WARINING : If you are not using Windows you should change '\\' with '/'
 	file_to_save = os.getcwd() + "\\passwords.txt"
 	try:
 		# TO CHECK IF THE FILE IS CREATED
