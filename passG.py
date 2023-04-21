@@ -1,13 +1,22 @@
-""" A program that generates Solid 16-digits passwords, and keep them safe in passwords.txt file in the chosen path"""
+""" A program that generates Solid 16-digits passwords,
+ 	and keeps them safe in passwords.txt file in the chosen path"""
 
 from random import choices, choice
-import os
+import platform 
 import logging
-# FOR WRITING LOGS WHICH IS HELPFUL IN DEBUG
+import os
+
+"""FOR WRITING LOGS WHICH IS HELPFUL IN DEBUG
+YOU CAN CHANGE THE LOG PATH HERE
+"""
 LOG_FORMAT = "%(levelname)s %(asctime)s %(message)s"
-# YOU CAN CHANGE THE LOG PATH HERE
-# WARNING : If you are not using Windows you should change '\\' with '/'
-LOG_PATH = os.getcwd() + "\\loggs.txt"
+LOG_PATH = os.getcwd() + "/loggs.txt"
+FILE_TO_SAVE = os.getcwd() + "/passwords.txt"
+
+if platform.system() == "Windows":
+	LOG_PATH = os.getcwd() + "\\loggs.txt"
+	FILE_TO_SAVE = os.getcwd() + "\\passwords.txt"
+	
 logging.basicConfig(filename = LOG_PATH,
 					format=LOG_FORMAT,
 					level=logging.DEBUG)
@@ -27,7 +36,7 @@ class PassGenerator:
 		for i in choices(PassGenerator.chars[0],k=5) : password += i 
 		for i in choices(PassGenerator.chars[2],k=4) : password += i 
 
-		# FOR MAKING ALL PASSWORD'S CHARACTERS COMPLETELY UNIQUE, YOU CAN COMMENT IT TILL THE LINE '37' IF YOU DON'T WANT IT
+		# FOR MAKING ALL PASSWORD'S CHARACTERS COMPLETELY UNIQUE,
 		password = set(password)
 		_ = ""
 		for i in password: _ += i
@@ -44,10 +53,9 @@ class PassGenerator:
 class PassManager:
 	"""Password Storing, deleting, manipulating Section """
 
-
 	def add(prompt:str):
 		"""Adding a password to passwords.txt"""
-		with open(file_to_save, "a") as f:
+		with open(FILE_TO_SAVE, "a") as f:
 			password = PassGenerator.create_pass()
 			f.write(f"{prompt.strip()} : {password}\n")
 			s = len(prompt) - 7
@@ -60,9 +68,9 @@ class PassManager:
 
 	def delete(prompt:str):
 		"""Deleting a password from passwords.txt"""
-		with open(file_to_save, "r") as f:
+		with open(FILE_TO_SAVE, "r") as f:
 			lines = f.readlines()
-			with open(file_to_save, "w") as f:
+			with open(FILE_TO_SAVE, "w") as f:
 				for line in lines:
 					if prompt not in line:
 						f.write(line+"\n")
@@ -72,9 +80,9 @@ class PassManager:
 		
 	def replace(prompt:str):
 		"""Replacing a password in passwords.txt"""
-		with open(file_to_save, "r") as f:
+		with open(FILE_TO_SAVE, "r") as f:
 			lines = f.readlines()
-		with open(file_to_save, "w") as f:
+		with open(FILE_TO_SAVE, "w") as f:
 			for line in lines:
 				if prompt.strip() == line.split(":")[0].strip():
 					new_pass = PassGenerator.create_pass()
@@ -85,13 +93,13 @@ class PassManager:
 
 	def reorder():
 		"""Shape the appearance in passwords.txt """
-		with open(file_to_save, "r") as f:
+		with open(FILE_TO_SAVE, "r") as f:
 			lines = f.readlines()
 			longest_len = 4
 			for line in lines:
 				profile_len = len(line.split(":")[0].strip())
 				if profile_len > longest_len : longest_len = profile_len
-		with open(file_to_save , "w") as f:
+		with open(FILE_TO_SAVE , "w") as f:
 			space = " "
 			for line in lines : 
 				l = line.split(":")
@@ -115,7 +123,7 @@ class Main:
 					exit()
 
 			elif prompt.lower() == "show" :
-				with open(file_to_save, "r") as f:
+				with open(FILE_TO_SAVE, "r") as f:
 					lines = f.readlines()
 					if len(lines) == 0 :
 						print("The list is empty, You have no saved password.")
@@ -137,7 +145,7 @@ class Main:
 	  				   If you want to delete all the passwords in passwords.txt, use 'delete all' command.")
 				continue
 			elif prompt.lower() == "delete all":
-						with open(file_to_save,"r") as f:
+						with open(FILE_TO_SAVE,"r") as f:
 							lines = f.readlines()
 							if len(lines) == 0:
 								print(" The file is already empty")
@@ -145,13 +153,13 @@ class Main:
 							else:
 								response = input(" Are you sure you want to delete all your passwords? (y/n) : ")
 								if response in ["Yes", "yes", "Y", "y"]:
-									with open(file_to_save, "w") as f:
+									with open(FILE_TO_SAVE, "w") as f:
 										f.write("")
 										print(" The file is clear now and all the passwords are gone")
 										logger.warning("'delete all' command have deleted all passwords")
 								break
 
-			with open(file_to_save, "r") as f:
+			with open(FILE_TO_SAVE, "r") as f:
 				lines = f.readlines()
 				profiles = [line.split(':')[0] for line in lines]
 				flag = True				
@@ -184,15 +192,13 @@ class Main:
 
 if __name__ == "__main__":
 	# THE PATH YOU WANT passwords.txt TO BE, MODIFY IT TO YOUR NEED
-	# WARINING : If you are not using Windows you should change '\\' with '/'
-	file_to_save = os.getcwd() + "\\passwords.txt"
 	try:
 		# TO CHECK IF THE FILE IS CREATED
-		with open(file_to_save, 'r'):
+		with open(FILE_TO_SAVE, 'r'):
 			pass
 	except:
 		# TO CREATE A FILE IF DOES NOT EXISTS 
-		with open(file_to_save, 'w'):
+		with open(FILE_TO_SAVE, 'w'):
 			pass
 
 	FLAG = "on"
