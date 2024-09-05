@@ -1,195 +1,200 @@
 import os
 import logging
-from random import choices, choice, randint
-from typing import Final
+import string
+from random import choice, shuffle
 
 # Constants
-LOG_FORMAT: Final[str] = "%(levelname)s %(asctime)s %(message)s"
-LOGS_FILE: Final[str] = "logs.txt"
-PASSWORD_FILE: Final[str] = "passwords.txt"
+LOG_FILE = "password_manager.log"
+PASSWORD_FILE = "passwords.txt"
+PASSWORD_LENGTH = 16
 
-LOG_PATH: Final[str] = os.path.join(os.getcwd(), LOGS_FILE)
-FILE_TO_SAVE: Final[str] = os.path.join(os.getcwd(), PASSWORD_FILE)
+# Logging setup
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger()
 
-logging.basicConfig(filename=LOG_PATH, format=LOG_FORMAT, level=logging.DEBUG)
-logger = logging.getLogger("PasswordManager")
 
-
-class PassGenerator:
-    """Class responsible for generating passwords."""
-
-    # Character pools: numbers, lowercase letters, special characters
-    chars: list[str] = ["1234567890", "abcdefghijklmnopqrstuvwxyz", "!@#$%&"]
-
-    @staticmethod
-    def unique_password(password: str) -> str:
-        """
-        Generate a unique 16-character password.
-
-        Ensures no repeating characters by adding random choices until
-        it meets the required length.
-        """
-        unique_password = "".join(set(password))
-        while len(unique_password) < 16:
-            char = choice(PassGenerator.chars[randint(0, 2)])
-            if char not in unique_password:
-                unique_password += char
-        return unique_password
+class PasswordGenerator:
+    """Responsible for generating strong passwords."""
 
     @staticmethod
-    def create_pass(unique: bool = True) -> str:
+    def generate_password(length: int = PASSWORD_LENGTH) -> str:
         """
-        Create a 16-character password with a mix of numbers, letters, and special characters.
-        If unique is True, ensures no repeating characters.
+        Generate a strong password consisting of letters, digits, and special characters.
+
+        Parameters:
+            length (int): Length of the password. Default is 16 characters.
+
+        Returns:
+            str: A strong password.
         """
-        password = ''.join(choices(PassGenerator.chars[1], k=7)).capitalize()  # Letters
-        password += ''.join(choices(PassGenerator.chars[0], k=5))  # Numbers
-        password += ''.join(choices(PassGenerator.chars[2], k=4))  # Special characters
+        if length < 8:
+            raise ValueError("Password length should be at least 8 characters.")
 
-        return PassGenerator.unique_password(password) if unique else password
+        characters = list(string.ascii_letters + string.digits + "!@#$%^&*()-_+=")
+        password = [
+            choice(string.ascii_lowercase),
+            choice(string.ascii_uppercase),
+            choice(string.digits),
+            choice("!@#$%^&*()-_+="),
+        ]
+
+        password += [choice(characters) for _ in range(length - 4)]
+        shuffle(password)
+        return "".join(password)
 
 
-class PassManager:
-    """Class responsible for password management actions (add, delete, replace)."""
+class FileHandler:
+    """Handles reading and writing passwords to/from the file."""
 
     @staticmethod
-    def add(prompt: str) -> None:
-        """
-        Add a generated password to the passwords.txt file associated with a prompt.
-        """
-        password = PassGenerator.create_pass()
-        with open(FILE_TO_SAVE, "a") as f:
-            f.write(f"{prompt.strip()} : {password}\n")
+    def read_passwords() -> list[str]:
+        """Read the passwords file and return its content as a list of lines."""
+        if not os.path.exists(PASSWORD_FILE):
+            return []
 
-        print(f"Successfully added {prompt}: {password}")
-        logger.info("Password added for %s", prompt)
+        with open(PASSWORD_FILE, "r") as file:
+            return file.readlines()
 
     @staticmethod
-    def delete(prompt: str) -> None:
-        """
-        Delete a password associated with a specific prompt from the passwords.txt file.
-        """
-        with open(FILE_TO_SAVE, "r") as f:
-            lines = f.readlines()
+    def write_passwords(lines: list[str]) -> None:
+        """Write a list of lines to the passwords file."""
+        with open(PASSWORD_FILE, "w") as file:
+            file.writelines(lines)
 
-        with open(FILE_TO_SAVE, "w") as f:
-            for line in lines:
-                if prompt not in line:
-                    f.write(line)
 
-        logger.info(f"Deleted password for {prompt}")
-        print(f"{prompt} is successfully removed.")
+class PasswordManager:
+    """Handles password management: adding, deleting, and replacing passwords."""
+
+    def __init__(self):
+        self.passwords = self.load_passwords()
+
+    def load_passwords(self) -> dict:
+        """Load passwords from the file and return them as a dictionary."""
+        lines = FileHandler.read_passwords()
+        passwords = {}
+        for line in lines:
+            prompt, password = map(str.strip, line.split(":"))
+            passwords[prompt] = password
+        return passwords
+
+    def save_passwords(self) -> None:
+        """Save the current passwords dictionary to the file."""
+        lines = [
+            f"{prompt}: {password}\n" for prompt, password in self.passwords.items()
+        ]
+        FileHandler.write_passwords(lines)
+
+    def add_password(self, prompt: str) -> None:
+        """Add a new password for the given prompt."""
+        if prompt in self.passwords:
+            print(f"Error: '{prompt}' already exists. Use replace or delete instead.")
+            return
+
+        password = PasswordGenerator.generate_password()
+        self.passwords[prompt] = password
+        self.save_passwords()
+
+        logger.info(f"Added password for '{prompt}'")
+        print(f"Password for '{prompt}' has been added successfully.")
+
+    def delete_password(self, prompt: str) -> None:
+        """Delete the password associated with the given prompt."""
+        if prompt not in self.passwords:
+            print(f"Error: '{prompt}' not found.")
+            return
+
+        del self.passwords[prompt]
+        self.save_passwords()
+
+        logger.info(f"Deleted password for '{prompt}'")
+        print(f"Password for '{prompt}' has been deleted successfully.")
+
+    def replace_password(self, prompt: str) -> None:
+        """Replace the password associated with the given prompt."""
+        if prompt not in self.passwords:
+            print(f"Error: '{prompt}' not found.")
+            return
+
+        new_password = PasswordGenerator.generate_password()
+        self.passwords[prompt] = new_password
+        self.save_passwords()
+
+        logger.info(f"Replaced password for '{prompt}'")
+        print(f"Password for '{prompt}' has been replaced successfully.")
+
+    def show_passwords(self) -> None:
+        """Display all saved passwords."""
+        if not self.passwords:
+            print("No saved passwords.")
+        else:
+            print("\nSaved Passwords:")
+            print("----------------------------")
+            for prompt, password in self.passwords.items():
+                print(f"{prompt}: {password}")
+            print("----------------------------")
+
+    def delete_all_passwords(self) -> None:
+        """Delete all saved passwords."""
+        if not self.passwords:
+            print("No saved passwords.")
+        else:
+            user_validation = input("Type 'yes' if you are sure you want to delete all the passwords? (you will never get them back!) : ")
+            if user_validation.lower().strip() == "yes":
+                self.passwords = {}
+                self.save_passwords()
+            logger.info(f"All passwords have been deleted")
+            print(f"All passwords have been deleted successfully.")
+
+class MainApp:
+    """The entry point for the password manager application."""
 
     @staticmethod
-    def replace(prompt: str) -> None:
+    def display_menu() -> None:
+        """Display the available commands to the user."""
+        print(
+            """
+        Password Manager Commands:
+        1. add [prompt]      - Add a new password for a given prompt
+        2. delete [prompt]   - Delete the password for a given prompt
+        3. replace [prompt]  - Replace the password for a given prompt
+        4. show              - Show all saved passwords
+        5. delete all        - delete all saved passwords
+        6. exit              - Exit the application
         """
-        Replace a password associated with a specific prompt in the passwords.txt file.
-        """
-        new_pass = PassGenerator.create_pass()
-        with open(FILE_TO_SAVE, "r") as f:
-            lines = f.readlines()
-
-        with open(FILE_TO_SAVE, "w") as f:
-            for line in lines:
-                if prompt.strip() == line.split(":")[0].strip():
-                    line = f"{prompt} : {new_pass}\n"
-                    logger.info(f"Replaced password for {prompt} with {new_pass}")
-                f.write(line)
-
-        print(f"Password for {prompt} successfully replaced with new password: {new_pass}")
+        )
 
     @staticmethod
-    def reorder() -> None:
-        """
-        Align the entries in passwords.txt for better readability.
-        """
-        with open(FILE_TO_SAVE, "r") as f:
-            lines = f.readlines()
-
-        longest_prompt_len = max(len(line.split(":")[0].strip()) for line in lines)
-
-        with open(FILE_TO_SAVE, "w") as f:
-            for line in lines:
-                prompt, password = line.split(":")
-                f.write(f"{prompt.strip().ljust(longest_prompt_len)} : {password.strip()}\n")
-
-
-class Main:
-    @staticmethod
-    def main():
-        print("""
-        Commands: 
-        - show: Shows all saved passwords
-        - delete all: Deletes all saved passwords
-        - exit: Exit the program
-        """)
+    def run():
+        """Main loop to handle user input."""
+        manager = PasswordManager()
 
         while True:
-            prompt = input("Enter a NAME to associate a password or a command: ").strip().lower()
+            MainApp.display_menu()
+            command = input("Enter a command: ").strip().lower()
 
-            if prompt == "exit":
-                PassManager.reorder()
+            if command.startswith("add "):
+                prompt = command[4:].strip()
+                manager.add_password(prompt)
+            elif command == "delete all":
+                manager.delete_all_passwords()
+            elif command.startswith("delete "):
+                prompt = command[7:].strip()
+                manager.delete_password(prompt)
+            elif command.startswith("replace "):
+                prompt = command[8:].strip()
+                manager.replace_password(prompt)
+            elif command == "show":
+                manager.show_passwords()
+            elif command == "exit":
+                print("Exiting password manager.")
                 break
-            elif prompt == "show":
-                Main.show_passwords()
-            elif prompt == "delete all":
-                Main.delete_all_passwords()
-            elif len(prompt) >= 4:
-                Main.manage_prompt(prompt)
             else:
-                print("Please enter a name with 4 or more characters.")
-
-    @staticmethod
-    def show_passwords() -> None:
-        """Displays all stored passwords."""
-        try:
-            with open(FILE_TO_SAVE, "r") as f:
-                lines = f.readlines()
-                if lines:
-                    print("Profile | Password\n" + "-" * 50)
-                    for line in lines:
-                        print(line.strip())
-                    print("-" * 50)
-                else:
-                    print("No saved passwords.")
-        except FileNotFoundError:
-            print("No passwords file found.")
-
-    @staticmethod
-    def delete_all_passwords() -> None:
-        """Delete all passwords after confirmation."""
-        response = input("Are you sure you want to delete all passwords? (y/n): ").strip().lower()
-        if response in ["y", "yes"]:
-            with open(FILE_TO_SAVE, "w") as f:
-                f.write("")
-            print("All passwords deleted.")
-            logger.warning("Deleted all passwords.")
-
-    @staticmethod
-    def manage_prompt(prompt: str) -> None:
-        """Manage existing prompts (add, delete, replace)."""
-        with open(FILE_TO_SAVE, "r") as f:
-            profiles = [line.split(":")[0].strip() for line in f.readlines()]
-
-        if prompt in profiles:
-            option = input(f"{prompt} already exists. What do you want to do? (delete/replace): ").strip().lower()
-            if option == "delete":
-                PassManager.delete(prompt)
-            elif option == "replace":
-                PassManager.replace(prompt)
-            else:
-                print("Invalid option. Options are 'delete' or 'replace'.")
-        else:
-            PassManager.add(prompt)
+                print("Invalid command. Please try again.")
 
 
 if __name__ == "__main__":
-    # Ensure passwords.txt exists
-    if not os.path.exists(FILE_TO_SAVE):
-        open(FILE_TO_SAVE, "w").close()
-
-    # Start the main loop
-    while True:
-        Main.main()
-        if input("\nPress Enter to exit or type anything to continue: ").strip() == "":
-            break
+    MainApp.run()
