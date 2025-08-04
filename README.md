@@ -28,7 +28,7 @@ password = generate_password()
 print(password)
 
 # Custom-length password (e.g., 50 characters)
-password = generate_password(50)
+password = generate_password(lenght=50)
 print(password)
 ```
 

@@ -1,9 +1,9 @@
 import string
 from random import choice, shuffle
 
-PASSWORD_LENGTH = 16
-MIN_PASSWORD_LENGTH = 8
-SPECIAL_CHARS = "!@#$%^&*()-_+="
+PASSWORD_LENGTH: int = 16
+MIN_PASSWORD_LENGTH: int = 8
+SPECIAL_CHARS: string = "!@#$%^&*()-_+="
 
 
 def generate_password(length: int = PASSWORD_LENGTH) -> str:

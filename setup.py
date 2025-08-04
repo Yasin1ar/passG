@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
 	name="passg",
-	version="1.1",
+	version="1.2",
 	author="Yasin Amirany",
 	author_email="yasin.amirany@gmail.com",
 	description="strong password generator",
@@ -20,4 +20,6 @@ setuptools.setup(
 		"Operating System :: OS Independent",
 	],
 	python_requires=">=3.6",
+	package_data={"passg": ["py.typed"]},
+    include_package_data=True,
 )
